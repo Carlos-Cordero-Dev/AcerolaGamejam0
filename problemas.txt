@@ -4,3 +4,8 @@
 -Mapear correctamente textura de splatting a mesh con multiples alturas ( mapear UV's correctamente )
 -Interpolar las texturas de splatting entre frames (todo esto seguramente sea basanados en una texutura madre rollo voronoid)
 -Interpolar entre meshes con heights distintos
+
+============================================================
+
+-Perlin siempre genera el mismo numero le pases lo que le pases
+-Convertir voronoid a mesh
