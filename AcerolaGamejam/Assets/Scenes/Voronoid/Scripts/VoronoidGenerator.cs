@@ -7,50 +7,57 @@ public class VoronoidGenerator : MonoBehaviour
 {
     [SerializeField] private Color[] possibleColors;
     [SerializeField] private int gridSize = 10;
-    [SerializeField] private float WAVELENGTH = 0.5f;
 
     private int imgSize;
     private int pixelsPerCell;
     private RawImage image;
+    private Texture2D texture;
     private Vector2Int[,] pointPositions;
     private Color[,] colors;
     private float[,] heights;
 
+    private float timer = 0.0f;
+    
     public static float[,] VoroPerlin;
     public static float[,] VoroIsland;
+    public static float[,] completeHeights;
 
     private void Awake()
     {
         image = GetComponent<RawImage>();
         imgSize = Mathf.RoundToInt(image.GetComponent<RectTransform>().sizeDelta.x);
+
+        pointPositions = new Vector2Int[gridSize, gridSize];
+        colors = new Color[gridSize, gridSize];
+        heights = new float[gridSize, gridSize];
+        texture = new Texture2D(imgSize, imgSize);
+        texture.filterMode = FilterMode.Point;
+        VoroPerlin = new float[imgSize, imgSize];
+        VoroIsland = new float[imgSize, imgSize];
+        completeHeights = new float[imgSize, imgSize];
+        pixelsPerCell = imgSize / gridSize;
+
+        GenerateHelperTextures(0.0f);
+        GeneratePoints();
+        GeneratePointColorsHeights();
         GenerateDiagram();
-        GenerateHelperTextures();
     }
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            GenerateDiagram();
-        }
+        timer += Time.deltaTime;
+        GenerateHelperTextures(timer * 10.0f);
+        GeneratePointColorsHeights();
+        GenerateDiagram();
+
+
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //}
     }
 
     private void GenerateDiagram()
     {
-        Texture2D texture = new Texture2D(imgSize, imgSize);
-        texture.filterMode = FilterMode.Point;
-        pixelsPerCell = imgSize / gridSize;
-
-        //for (int i = 0; i < imgSize; i++)
-        //{
-        //    for (int j = 0; j < imgSize; j++)
-        //    {
-        //        texture.SetPixel(i, j, Color.white);
-        //    }
-        //}
-
-        GeneratePoints();
-
 
         for (int i = 0; i < imgSize; i++)
         {
@@ -82,6 +89,7 @@ public class VoronoidGenerator : MonoBehaviour
                 }
 
                 texture.SetPixel(i, j, colors[nearestPoint.x, nearestPoint.y]);
+                completeHeights[i, j] = heights[nearestPoint.x, nearestPoint.y];
             }
         }
 
@@ -90,68 +98,71 @@ public class VoronoidGenerator : MonoBehaviour
         {
             for (int j = 0; j < gridSize; j++)
             {
-                texture.SetPixel(pointPositions[i, j].x, pointPositions[i, j].y, Color.black);
+                texture.SetPixel(pointPositions[i, j].x, pointPositions[i, j].y, Color.red);
             }
         }
 
         texture.Apply();
         image.texture = texture;
-        Debug.Log(Application.dataPath + "/Voronoid.png");
-        System.IO.File.WriteAllBytes(Application.dataPath + "/Voronoid.png", texture.EncodeToPNG());
+        //Debug.Log(Application.dataPath + "/Scenes/Voronoid/Resources/Textures/Voronoid.png");
+        System.IO.File.WriteAllBytes(Application.dataPath + "/Scenes/Voronoid/Resources/Textures/Voronoid.png", texture.EncodeToPNG());
     }
 
     private void GeneratePoints()
     {
-        pointPositions = new Vector2Int[gridSize, gridSize];
-        colors = new Color[gridSize, gridSize];
-        heights = new float[gridSize, gridSize];
-
         for (int i = 0; i < gridSize; i++)
         {
             for (int j = 0; j < gridSize; j++)
             {
                 pointPositions[i, j] = new Vector2Int(i * pixelsPerCell + Random.Range(0, pixelsPerCell), j * pixelsPerCell + Random.Range(0, pixelsPerCell));
+            }
+        }
+    }
 
-                Color currentColor = possibleColors[Random.Range(0, possibleColors.Length)];
-                colors[i, j] = currentColor;
+    private void GeneratePointColorsHeights()
+    {
+        for (int i = 0; i < gridSize; i++)
+        {
+            for (int j = 0; j < gridSize; j++)
+            {
+                //Color currentColor = possibleColors[Random.Range(0, possibleColors.Length)];
+                //colors[i, j] = currentColor;
 
-                //heights
+                float island = VoroIsland[pointPositions[i, j].x, pointPositions[i, j].y];
+                float perlin = VoroPerlin[pointPositions[i, j].x, pointPositions[i, j].y];
 
-                float nx = pointPositions[i, j].x / gridSize - 0.5f;
-                float ny = pointPositions[i, j].y / gridSize - -0.5f;
-                // start with noise:
-                float noiseHeight = (1 + Mathf.PerlinNoise(nx / WAVELENGTH, ny / WAVELENGTH)) / 2;
-                // modify noise to make islands:
-                float d = 2 * Mathf.Max(Mathf.Abs(nx), Mathf.Abs(ny)); // should be 0-1
-                heights[i, j] = (1 + noiseHeight - d) / 2;
-                //Debug.Log("height " + heights[i, j]);
-
-
-                float centerIsland = ((float)Mathf.Sin(((float)i / (float)gridSize) * Mathf.PI)) *
-                    ((float)Mathf.Sin(((float)j / (float)gridSize) * Mathf.PI));
-
-                centerIsland *= Mathf.PerlinNoise(i, j);
-
+                float currentNoiseValue = (island + perlin) * 0.5f;
+                currentNoiseValue = Mathf.Clamp(currentNoiseValue, 0.0f, 1.0f);
+                //Debug.Log("combined color " + currentNoiseValue);
                 //Debug.Log("centerIsland " + centerIsland);
-                colors[i, j] = (heights[i, j] > -gridSize * 0.5f) ? Color.white : Color.black;
+                heights[i, j] = currentNoiseValue;
+                //colors[i, j] = (currentNoiseValue > 0.5f) ? Color.white : Color.black;
+                colors[i, j] = new Color(currentNoiseValue, currentNoiseValue, currentNoiseValue, 1.0f);
 
             }
         }
     }
 
-    private void GenerateHelperTextures()
+    private void GenerateHelperTextures(float t)
     {
-        VoroPerlin = new float[imgSize, imgSize];
 
         for (int i = 0; i < imgSize; i++)
         {
             for (int j = 0; j < imgSize; j++)
             {
-                float perl = Mathf.PerlinNoise(i, j);
-                Debug.Log("perl " + perl + i + j);
+                float perl = Mathf.PerlinNoise((float)i/ (float)imgSize, (float)j / (float)imgSize);
+                //Debug.Log("perl " + perl + i + j);
                 VoroPerlin[i, j] = perl;
 
+
+                float centerIsland = Mathf.Sin(t)+ ((float)Mathf.Sin(((float)i / (float)imgSize) * Mathf.PI)) *
+                      -Mathf.Sin(t) + ((float)Mathf.Sin(((float)j / (float)imgSize) * Mathf.PI));
+
+                VoroIsland[i, j] = centerIsland;
             }
         }
+
+
+
     }
 }

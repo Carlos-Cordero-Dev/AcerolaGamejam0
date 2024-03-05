@@ -9,6 +9,7 @@ public class PerlinVisualization : MonoBehaviour
     private int pixelsPerCell;
     private RawImage image;
     private int gridSize = 10;
+    private Texture2D texture;
     private void Awake()
     {
         image = GetComponent<RawImage>();
@@ -17,14 +18,17 @@ public class PerlinVisualization : MonoBehaviour
 
     private void Start()
     {
+        texture = new Texture2D(imgSize, imgSize);
+        texture.filterMode = FilterMode.Point;
+        pixelsPerCell = imgSize / gridSize;
+        SetTexture();
+    }
+    private void Update()
+    {
         SetTexture();
     }
     private void SetTexture()
     {
-        Texture2D texture = new Texture2D(imgSize, imgSize);
-        texture.filterMode = FilterMode.Point;
-        pixelsPerCell = imgSize / gridSize;
-
         for (int i = 0; i < imgSize; i++)
         {
             for (int j = 0; j < imgSize; j++)

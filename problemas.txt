@@ -7,5 +7,9 @@
 
 ============================================================
 
--Perlin siempre genera el mismo numero le pases lo que le pases
--Convertir voronoid a mesh
+-[x] Perlin siempre genera el mismo numero le pases lo que le pases
+-[x] Convertir voronoid a mesh
+
+============================================================
+
+- MeshCollider no puede convertir mesh a un objeto valido? no se puede setear "meshCollider.sharedMesh = mesh;"
