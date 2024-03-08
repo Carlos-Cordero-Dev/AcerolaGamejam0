@@ -24,8 +24,14 @@ public class Player : MonoBehaviour
         float playerU = 0.0f;
         float playerV = 0.0f;
 
-        float downLeftX = ground.transform.position.x - (ground.transform.localScale.x / 2.0f);
-        float upRightX = ground.transform.position.x + (ground.transform.localScale.x / 2.0f);
+        Bounds groundBounds = ground.GetComponent<MeshRenderer>().bounds;
+
+        float groundScaleX = Mathf.Abs(groundBounds.min.x - groundBounds.max.x);
+        float groundScaleZ = Mathf.Abs(groundBounds.min.z - groundBounds.max.z);
+        Debug.Log("scale x " + groundScaleX + " scale z " + groundScaleZ);
+
+        float downLeftX = ground.transform.position.x - (groundScaleX / 2.0f);
+        float upRightX = ground.transform.position.x + (groundScaleX / 2.0f);
         float offsetX = 0.0f;
         if (downLeftX < 0.0f)
         {
@@ -36,8 +42,8 @@ public class Player : MonoBehaviour
         float playerX = (transform.position.x + offsetX) - (downLeftX + offsetX);
         playerU = playerX / totalX;
 
-        float downLeftZ = ground.transform.position.z - (ground.transform.localScale.y / 2.0f);
-        float upRightZ = ground.transform.position.z + (ground.transform.localScale.y / 2.0f);
+        float downLeftZ = ground.transform.position.z - (groundScaleZ / 2.0f);
+        float upRightZ = ground.transform.position.z + (groundScaleZ / 2.0f);
         float offsetZ = 0.0f;
         if (downLeftZ < 0.0f)
         {

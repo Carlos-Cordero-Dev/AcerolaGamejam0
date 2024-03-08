@@ -12,4 +12,10 @@
 
 ============================================================
 
-- MeshCollider no puede convertir mesh a un objeto valido? no se puede setear "meshCollider.sharedMesh = mesh;"
+- [x] MeshCollider no puede convertir mesh a un objeto valido? no se puede setear "meshCollider.sharedMesh = mesh;"
+
+============================================================
+
+- Player posiciones UV no estan bien (flipeadas)?
+- Funciones matematicas para niveles van guay pero no es practico
+- FPS mal en gamemode? Comprobar

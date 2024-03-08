@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SplatMat
-  m_Shader: {fileID: 4800000, guid: ea4bc26617251c14ca380f3d818e5dd4, type: 3}
+  m_Name: SplatMat2Tex
+  m_Shader: {fileID: 4800000, guid: f9de5fe482f8afe448aeda03d12d8ab8, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -45,7 +45,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: b4e8a666ca72a7b4b8713b5e58c22a85, type: 3}
+        m_Texture: {fileID: 2800000, guid: 01b010483f138304f87e3b691fd37d6b, type: 3}
         m_Scale: {x: 4, y: 4}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:

@@ -16,7 +16,7 @@ public class HeightmapToMesh : MonoBehaviour
     {
         meshFilter = GetComponent<MeshFilter>();
         meshRenderer = GetComponent<MeshRenderer>();
-
+        meshCollider = GetComponent<MeshCollider>();
 
         meshData = MeshGenerator.GenerateTerrainMesh(VoronoidGenerator.completeHeights, heightMultiplyer);
         mesh = meshData.CreateMesh();
@@ -24,7 +24,7 @@ public class HeightmapToMesh : MonoBehaviour
         meshFilter.sharedMesh = mesh;
         //meshCollider.sharedMesh = mesh;
 
-        meshRenderer.material = Resources.Load("Materials/VoronoidMat") as Material;
+        //meshRenderer.material = Resources.Load("Materials/VoronoidMat") as Material;
 
     }
     private void Update()
@@ -33,6 +33,6 @@ public class HeightmapToMesh : MonoBehaviour
         mesh = meshData.CreateMesh();
 
         meshFilter.sharedMesh = mesh;
-        //meshCollider.sharedMesh = mesh;
+        meshCollider.sharedMesh = mesh;
     }
 }

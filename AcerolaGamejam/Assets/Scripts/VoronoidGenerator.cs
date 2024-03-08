@@ -7,6 +7,9 @@ public class VoronoidGenerator : MonoBehaviour
 {
     [SerializeField] private Color[] possibleColors;
     [SerializeField] private int gridSize = 10;
+    [SerializeField] private float animDuration;
+    [SerializeField] private GameObject dst_object;
+    private MeshRenderer dst_renderer;
 
     private int imgSize;
     private int pixelsPerCell;
@@ -21,23 +24,31 @@ public class VoronoidGenerator : MonoBehaviour
     public static float[,] VoroPerlin;
     public static float[,] VoroIsland;
     public static float[,] completeHeights;
+    public static Texture2D textureSplat;
 
     private void Awake()
     {
+        dst_renderer = dst_object.GetComponent<MeshRenderer>();
+
         image = GetComponent<RawImage>();
         imgSize = Mathf.RoundToInt(image.GetComponent<RectTransform>().sizeDelta.x);
 
         pointPositions = new Vector2Int[gridSize, gridSize];
         colors = new Color[gridSize, gridSize];
         heights = new float[gridSize, gridSize];
+
         texture = new Texture2D(imgSize, imgSize);
         texture.filterMode = FilterMode.Point;
+
+        textureSplat = new Texture2D(imgSize, imgSize);
+        textureSplat.filterMode = FilterMode.Point;
+
         VoroPerlin = new float[imgSize, imgSize];
         VoroIsland = new float[imgSize, imgSize];
         completeHeights = new float[imgSize, imgSize];
         pixelsPerCell = imgSize / gridSize;
 
-        GenerateHelperTextures(0.0f);
+        GenerateHelperTextures(0.0f,1.0f);
         GeneratePoints();
         GeneratePointColorsHeights();
         GenerateDiagram();
@@ -46,7 +57,7 @@ public class VoronoidGenerator : MonoBehaviour
     private void Update()
     {
         timer += Time.deltaTime;
-        GenerateHelperTextures(timer * 10.0f);
+        GenerateHelperTextures(timer, animDuration);
         GeneratePointColorsHeights();
         GenerateDiagram();
 
@@ -89,7 +100,10 @@ public class VoronoidGenerator : MonoBehaviour
                 }
 
                 texture.SetPixel(i, j, colors[nearestPoint.x, nearestPoint.y]);
-                completeHeights[i, j] = heights[nearestPoint.x, nearestPoint.y];
+
+                float currentHeight = heights[nearestPoint.x, nearestPoint.y];
+                textureSplat.SetPixel(i, j, (currentHeight > 0.5f) ? Color.white : Color.black);
+                completeHeights[i, j] = currentHeight;
             }
         }
 
@@ -104,8 +118,12 @@ public class VoronoidGenerator : MonoBehaviour
 
         texture.Apply();
         image.texture = texture;
+
+        textureSplat.Apply();
         //Debug.Log(Application.dataPath + "/Scenes/Voronoid/Resources/Textures/Voronoid.png");
-        System.IO.File.WriteAllBytes(Application.dataPath + "/Scenes/Voronoid/Resources/Textures/Voronoid.png", texture.EncodeToPNG());
+        //System.IO.File.WriteAllBytes(Application.dataPath + "/Scenes/Voronoid/Resources/Textures/Voronoid.png", texture.EncodeToPNG());
+
+        dst_renderer.material.SetTexture("_MainTex", textureSplat);
     }
 
     private void GeneratePoints()
@@ -143,7 +161,7 @@ public class VoronoidGenerator : MonoBehaviour
         }
     }
 
-    private void GenerateHelperTextures(float t)
+    private void GenerateHelperTextures(float t, float animDuration)
     {
 
         for (int i = 0; i < imgSize; i++)
@@ -154,9 +172,16 @@ public class VoronoidGenerator : MonoBehaviour
                 //Debug.Log("perl " + perl + i + j);
                 VoroPerlin[i, j] = perl;
 
+                //x=sen(y*4)*10
+                float interpTime = t / animDuration;
+                float interpPxl = interpTime * imgSize;
 
-                float centerIsland = Mathf.Sin(t)+ ((float)Mathf.Sin(((float)i / (float)imgSize) * Mathf.PI)) *
-                      -Mathf.Sin(t) + ((float)Mathf.Sin(((float)j / (float)imgSize) * Mathf.PI));
+                float offsetY = interpPxl;
+                float offsetX = Mathf.Sin(offsetY * 0.1f) * 40.0f;
+
+
+                float centerIsland = ((float)Mathf.Sin(((float)(i + offsetX) / (float)imgSize) * Mathf.PI)) *
+                       ((float)Mathf.Sin(((float)(j+ offsetY) / (float)imgSize) * Mathf.PI));
 
                 VoroIsland[i, j] = centerIsland;
             }
