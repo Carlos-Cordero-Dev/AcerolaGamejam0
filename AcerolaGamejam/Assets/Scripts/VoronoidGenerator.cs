@@ -14,7 +14,6 @@ public class VoronoidGenerator : MonoBehaviour
     private int imgSize;
     private int pixelsPerCell;
     private RawImage image;
-    private Texture2D texture;
     private Vector2Int[,] pointPositions;
     private Color[,] colors;
     private float[,] heights;
@@ -25,6 +24,8 @@ public class VoronoidGenerator : MonoBehaviour
     public static float[,] VoroIsland;
     public static float[,] completeHeights;
     public static Texture2D textureSplat;
+    public static Texture2D gameplayTexture;
+    public static Texture2D previewTexture;
 
     private void Awake()
     {
@@ -37,8 +38,11 @@ public class VoronoidGenerator : MonoBehaviour
         colors = new Color[gridSize, gridSize];
         heights = new float[gridSize, gridSize];
 
-        texture = new Texture2D(imgSize, imgSize);
-        texture.filterMode = FilterMode.Point;
+        gameplayTexture = new Texture2D(imgSize, imgSize);
+        gameplayTexture.filterMode = FilterMode.Point;
+
+        previewTexture = new Texture2D(imgSize, imgSize);
+        previewTexture.filterMode = FilterMode.Point;
 
         textureSplat = new Texture2D(imgSize, imgSize);
         textureSplat.filterMode = FilterMode.Point;
@@ -48,10 +52,7 @@ public class VoronoidGenerator : MonoBehaviour
         completeHeights = new float[imgSize, imgSize];
         pixelsPerCell = imgSize / gridSize;
 
-        GenerateHelperTextures(0.0f,1.0f);
         GeneratePoints();
-        GeneratePointColorsHeights();
-        GenerateDiagram();
     }
 
     private void Update()
@@ -59,15 +60,29 @@ public class VoronoidGenerator : MonoBehaviour
         timer += Time.deltaTime;
         GenerateHelperTextures(timer, animDuration);
         GeneratePointColorsHeights();
-        GenerateDiagram();
+        GenerateDiagram(previewTexture);
 
-
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //}
+        //UpdateAndShowTextures
     }
 
-    private void GenerateDiagram()
+    //TODO: Make this function adapt to level craetion (maybe summon a different function to set level beforehand?
+    public void UpdateAndShowTextures(float timer, int gameState)
+    {
+        if(gameState == 0) //preview
+        {
+            GenerateHelperTextures(timer, animDuration);
+            GeneratePointColorsHeights();
+            GenerateDiagram(previewTexture);
+        }
+        else if(gameState == 1) //gameplay
+        {
+            GenerateHelperTextures(timer, animDuration);
+            GeneratePointColorsHeights();
+            GenerateDiagram(gameplayTexture);
+        }
+    }
+
+    private void GenerateDiagram(Texture2D texture)
     {
 
         for (int i = 0; i < imgSize; i++)

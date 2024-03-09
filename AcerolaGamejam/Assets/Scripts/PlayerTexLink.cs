@@ -52,14 +52,19 @@ public class PlayerTexLink : MonoBehaviour
         float playerZ = (transform.position.z + offsetZ) - (downLeftZ + offsetZ);
         playerV = playerZ / totalZ;
 
-        return new Vector4(playerU, playerV, 1.0f, 1.0f);
+        return new Vector4(playerU, 1.0f - playerV, 1.0f, 1.0f);
 
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         currentCoords = PlayerPosToTexCoords();
         myMat.color = VoronoidGenerator.textureSplat.GetPixelBilinear(currentCoords.x, currentCoords.y);
+        
+        //debug set pixel where player is to red
+        VoronoidGenerator.textureSplat.SetPixel((int) (currentCoords.x * 100.0f), (int)(currentCoords.y * 100.0f), Color.red);
+        VoronoidGenerator.textureSplat.Apply();
     }
+
 }

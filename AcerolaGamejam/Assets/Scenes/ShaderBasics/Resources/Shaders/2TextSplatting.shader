@@ -7,9 +7,6 @@ Shader "Unlit/TextureSplattingOnlyTwoTex"
 		_MainTex("Texture", 2D) = "white" {}
 		[NoScaleOffset] _Texture1("Texture 1", 2D) = "white" {}
 		[NoScaleOffset] _Texture2("Texture 2", 2D) = "white" {}
-
-		_PlayerPosTexCoords("Player Pos", Vector) = (.5, .5, 1, 1)
-		_SplatRGBAatPlayerTexCoord("Splat RGBA at player coords", Vector) = (1, 1, 1, 1)
 	}
 
 	SubShader
@@ -26,8 +23,6 @@ Shader "Unlit/TextureSplattingOnlyTwoTex"
 			float4 _MainTex_ST; //comes implicit with the sampler2D
 
 			sampler2D _Texture1, _Texture2;
-			float4 _PlayerPosTexCoords;
-			float4 _SplatRGBAatPlayerTexCoord;
 
 			struct VertexData {
 				float4 position : POSITION;
@@ -57,8 +52,6 @@ Shader "Unlit/TextureSplattingOnlyTwoTex"
 					tex2D(_Texture1, i.uv) * splat.r +
 					tex2D(_Texture2, i.uv) * (1 - splat.r);
 
-				_SplatRGBAatPlayerTexCoord = tex2D(_MainTex, _PlayerPosTexCoords.xy);
-				_SplatRGBAatPlayerTexCoord = float4(1, 0, 0, 1);
 				return outputTex;
 					
 			}
