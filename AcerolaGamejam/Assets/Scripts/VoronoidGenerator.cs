@@ -5,9 +5,9 @@ using UnityEngine.UI;
 
 public class VoronoidGenerator : MonoBehaviour
 {
-    [SerializeField] private Color[] possibleColors;
+    //[SerializeField] private Color[] possibleColors;
     [SerializeField] private int gridSize = 10;
-    [SerializeField] private float animDuration;
+    //[SerializeField] private float animDuration;
     [SerializeField] private GameObject dst_object;
     private MeshRenderer dst_renderer;
 
@@ -18,7 +18,6 @@ public class VoronoidGenerator : MonoBehaviour
     private Color[,] colors;
     private float[,] heights;
 
-    private float timer = 0.0f;
     
     public static float[,] VoroPerlin;
     public static float[,] VoroIsland;
@@ -57,26 +56,21 @@ public class VoronoidGenerator : MonoBehaviour
 
     private void Update()
     {
-        timer += Time.deltaTime;
-        GenerateHelperTextures(timer, animDuration);
-        GeneratePointColorsHeights();
-        GenerateDiagram(previewTexture);
 
-        //UpdateAndShowTextures
     }
 
     //TODO: Make this function adapt to level craetion (maybe summon a different function to set level beforehand?
-    public void UpdateAndShowTextures(float timer, int gameState)
+    public void UpdateAndShowTextures(LevelOffset level, GameManager.GameState gameState)
     {
-        if(gameState == 0) //preview
+        if(gameState == GameManager.GameState.Preview) //preview
         {
-            GenerateHelperTextures(timer, animDuration);
+            GenerateHelperTextures(level);
             GeneratePointColorsHeights();
             GenerateDiagram(previewTexture);
         }
-        else if(gameState == 1) //gameplay
+        else if(gameState == GameManager.GameState.Gameplay) //gameplay
         {
-            GenerateHelperTextures(timer, animDuration);
+            GenerateHelperTextures(level);
             GeneratePointColorsHeights();
             GenerateDiagram(gameplayTexture);
         }
@@ -116,9 +110,12 @@ public class VoronoidGenerator : MonoBehaviour
 
                 texture.SetPixel(i, j, colors[nearestPoint.x, nearestPoint.y]);
 
-                float currentHeight = heights[nearestPoint.x, nearestPoint.y];
-                textureSplat.SetPixel(i, j, (currentHeight > 0.5f) ? Color.white : Color.black);
-                completeHeights[i, j] = currentHeight;
+                if (GameManager.gameState == GameManager.GameState.Gameplay)
+                {
+                    float currentHeight = heights[nearestPoint.x, nearestPoint.y];
+                    textureSplat.SetPixel(i, j, (currentHeight > 0.5f) ? Color.white : Color.black);
+                    completeHeights[i, j] = currentHeight;
+                }
             }
         }
 
@@ -132,13 +129,20 @@ public class VoronoidGenerator : MonoBehaviour
         }
 
         texture.Apply();
-        image.texture = texture;
 
-        textureSplat.Apply();
-        //Debug.Log(Application.dataPath + "/Scenes/Voronoid/Resources/Textures/Voronoid.png");
-        //System.IO.File.WriteAllBytes(Application.dataPath + "/Scenes/Voronoid/Resources/Textures/Voronoid.png", texture.EncodeToPNG());
 
-        dst_renderer.material.SetTexture("_MainTex", textureSplat);
+        if (GameManager.gameState == GameManager.GameState.Gameplay)
+        {
+
+            image.texture = texture;
+
+
+            textureSplat.Apply();
+            dst_renderer.material.SetTexture("_MainTex", textureSplat);
+
+            //Debug.Log(Application.dataPath + "/Scenes/Voronoid/Resources/Textures/Voronoid.png");
+            //System.IO.File.WriteAllBytes(Application.dataPath + "/Scenes/Voronoid/Resources/Textures/Voronoid.png", texture.EncodeToPNG());
+        }
     }
 
     private void GeneratePoints()
@@ -176,7 +180,7 @@ public class VoronoidGenerator : MonoBehaviour
         }
     }
 
-    private void GenerateHelperTextures(float t, float animDuration)
+    private void GenerateHelperTextures(LevelOffset level)
     {
 
         for (int i = 0; i < imgSize; i++)
@@ -187,12 +191,8 @@ public class VoronoidGenerator : MonoBehaviour
                 //Debug.Log("perl " + perl + i + j);
                 VoroPerlin[i, j] = perl;
 
-                //x=sen(y*4)*10
-                float interpTime = t / animDuration;
-                float interpPxl = interpTime * imgSize;
-
-                float offsetY = interpPxl;
-                float offsetX = Mathf.Sin(offsetY * 0.1f) * 40.0f;
+                float offsetY = level.offsetX;
+                float offsetX = level.offsetY;
 
 
                 float centerIsland = ((float)Mathf.Sin(((float)(i + offsetX) / (float)imgSize) * Mathf.PI)) *

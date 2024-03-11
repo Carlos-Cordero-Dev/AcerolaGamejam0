@@ -22,7 +22,10 @@ public class SplatmapVisualuzation : MonoBehaviour
     }
     private void Update()
     {
-        SetTexture();
+        if (GameManager.gameState == GameManager.GameState.Gameplay)
+        {
+            SetTexture();
+        }
     }
     private void SetTexture()
     {

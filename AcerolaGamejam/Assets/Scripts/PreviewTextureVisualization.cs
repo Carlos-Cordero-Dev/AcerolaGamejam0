@@ -22,7 +22,10 @@ public class PreviewTextureVisualization : MonoBehaviour
     }
     private void Update()
     {
-        SetTexture();
+        if (GameManager.gameState == GameManager.GameState.Preview)
+        {
+            SetTexture();
+        }
     }
     private void SetTexture()
     {
