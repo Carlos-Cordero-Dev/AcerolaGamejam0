@@ -120,13 +120,13 @@ public class VoronoidGenerator : MonoBehaviour
         }
 
 
-        for (int i = 0; i < gridSize; i++)
-        {
-            for (int j = 0; j < gridSize; j++)
-            {
-                texture.SetPixel(pointPositions[i, j].x, pointPositions[i, j].y, Color.red);
-            }
-        }
+        //for (int i = 0; i < gridSize; i++)
+        //{
+        //    for (int j = 0; j < gridSize; j++)
+        //    {
+        //        texture.SetPixel(pointPositions[i, j].x, pointPositions[i, j].y, Color.red);
+        //    }
+        //}
 
         texture.Apply();
 

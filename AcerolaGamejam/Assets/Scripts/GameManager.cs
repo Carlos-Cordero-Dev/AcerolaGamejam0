@@ -13,34 +13,45 @@ public class GameManager : MonoBehaviour
     }
     public static GameState gameState;
 
-    public float timeModifierForPreview = 1.0f;
     public GameObject PreviewGo;
     public GameObject GameplayGo;
+    public GameObject PlayerGo;
+    public GameObject CompletePlayerGo;
+    public GameObject PreviewCameraGo;
     public int currentLevel = 1;
 
     private float timer = 0.0f;
-    private float timeModifier = 1.0f;
     private VoronoidGenerator voroGen;
     private LevelConfiguration levelConf;
+    private PlayerTexLink playerTexLink;
+    private TMP_Text windupText;
+    public GameObject windupGo;
+    private bool updateOnceTexture = false;
 
     //== GAMEPLAY VARIABLES == //
 
-    public GameObject windupGo;
     public float windupBetweenLevels = 3.0f;
 
-    private TMP_Text windupText;
     private bool levelWindedUp = false;
     private int gameplayCounter = 0;
 
-    private float testTimer = 0.0f;
+    private float surviveTimer = 0.0f;
+
+    //== TESTING VARIABLES ==//
+    public int initialLevel = 1;
+    public bool playerInvicible = false;
 
     void Start()
     {
+        currentLevel = initialLevel;
         PreviewGo.SetActive(false);
         //gameState = GameState.Gameplay;
         voroGen = GameplayGo.GetComponent<VoronoidGenerator>();
         levelConf = GetComponent<LevelConfiguration>();
         windupText = windupGo.GetComponent<TMP_Text>();
+        playerTexLink = PlayerGo.GetComponent<PlayerTexLink>();
+
+        DisableGameplay();
     }
 
     void ShowWindowupCounter(float currentTime)
@@ -53,14 +64,26 @@ public class GameManager : MonoBehaviour
     {
         PreviewGo.SetActive(false);
         gameState = GameState.Gameplay;
-        timeModifier = 1.0f;
     }
 
     void SwitchToPreview()
     {
+        DisableGameplay();
         PreviewGo.SetActive(true);
         gameState = GameState.Preview;
-        timeModifier = timeModifierForPreview;
+    }
+
+    void DisableGameplay()
+    {
+        CompletePlayerGo.SetActive(false);
+        PreviewCameraGo.SetActive(true);
+    }
+
+    void EnableGameplay()
+    {
+        PreviewCameraGo.SetActive(false);
+        CompletePlayerGo.SetActive(true);
+        PlayerGo.transform.position = levelConf.LevelSpawnpoint(currentLevel);
     }
     // Update is called once per frame
     void Update()
@@ -69,6 +92,16 @@ public class GameManager : MonoBehaviour
 
         if(!levelWindedUp)
         {
+            if(!updateOnceTexture)
+            {
+                if (gameplayCounter == 1)
+                {
+                    //going into gameplay
+                    EnableGameplay();
+                }
+                voroGen.UpdateAndShowTextures(levelConf.Level(currentLevel, 0.0f),gameState);
+                updateOnceTexture = true;
+            }
             ShowWindowupCounter(timer);
             if (timer >= windupBetweenLevels)
             {
@@ -79,11 +112,13 @@ public class GameManager : MonoBehaviour
                 {
                     //going into preview
                     SwitchToPreview();
+                    updateOnceTexture = false;
                 }
                 else if(gameplayCounter == 1)
                 {
                     //going into gameplay
                     SwitchToGameplay();
+                    updateOnceTexture = false;
                 }
                 timer = 0.0f;
 
@@ -93,7 +128,8 @@ public class GameManager : MonoBehaviour
         {
             if (gameState == GameState.Preview)
             {
-                if (timer >= levelConf.Level1Duration)
+                //print("preview time " + levelConf.PreviewTime(currentLevel, gameState));
+                if (timer >= levelConf.PreviewTime(currentLevel, gameState))
                 {
                     //enter gameplay
                     SwitchToGameplay();
@@ -106,23 +142,42 @@ public class GameManager : MonoBehaviour
             }
             else if (gameState == GameState.Gameplay)
             {
+                //====================================================================
                 //gameplay
-                testTimer += Time.deltaTime;
-                //win condition
-                if (testTimer > 3.0f)
-                {
-                    testTimer = 0.0f;
-                    Debug.Log("Won level " + currentLevel);
-                    currentLevel++;
+                surviveTimer += Time.deltaTime;
 
+                if(playerTexLink.currentColor == Color.black && !playerInvicible)
+                {
+                    surviveTimer = 0.0f;
+                    Debug.Log("lost level " + currentLevel);
+
+                    DisableGameplay();
                     windupGo.SetActive(true);
                     levelWindedUp = false;
                     gameplayCounter = 0;
                     timer = 0.0f;
                     return;
                 }
+
+                //win condition
+                if (surviveTimer > levelConf.LevelDuration(currentLevel))
+                {
+                    surviveTimer = 0.0f;
+                    Debug.Log("Won level " + currentLevel);
+                    currentLevel++;
+
+                    DisableGameplay();
+                    windupGo.SetActive(true);
+                    levelWindedUp = false;
+                    gameplayCounter = 0;
+                    timer = 0.0f;
+                    //return;
+                }
+
+                //====================================================================
             }
-            voroGen.UpdateAndShowTextures(levelConf.Level(currentLevel, timer * timeModifier), gameState);
+            voroGen.UpdateAndShowTextures(levelConf.Level(currentLevel, timer * 
+                levelConf.TimeModifierForLevel(currentLevel,gameState)), gameState);
 
         }
     }
