@@ -13,6 +13,8 @@ public class PlayerMovement : MonoBehaviour
     public float groundCheckRaycastDistance = 0.1f;
 
     public Transform Cam;
+    public Animator animator;
+
 
     private CharacterController controller;
     private Vector3 playerVelocity;
@@ -42,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
         groundedPlayer = CheckIsPlayerGrounded();
         if (groundedPlayer && playerVelocity.y < 0)
         {
+            animator.SetBool("jumping", false);
             playerVelocity.y = 0f;
         }
 
@@ -53,6 +56,12 @@ public class PlayerMovement : MonoBehaviour
         move.y = 0.0f;
         move.Normalize();
 
+        if(move.magnitude < 0.01f)
+        {
+            animator.SetBool("moving", false);
+        }
+        else animator.SetBool("moving", true);
+
         controller.Move(move * playerSpeed * Time.deltaTime);
 
         if (move != Vector3.zero)
@@ -62,6 +71,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetButtonDown("Jump") && groundedPlayer)
         {
+            animator.SetBool("jumping",true);
             playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
         }
 
@@ -72,12 +82,11 @@ public class PlayerMovement : MonoBehaviour
         {
             transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * Cam.GetComponent<CameraMovement>().sensivityX * Time.deltaTime);
 
-
             Quaternion CamRotation = Cam.rotation;
             CamRotation.x = 0f;
             CamRotation.z = 0f;
 
-            transform.rotation = Quaternion.Lerp(transform.rotation, CamRotation, 0.1f);
+            //transform.rotation = Quaternion.Lerp(transform.rotation, CamRotation, 0.1f);
 
         }
     }

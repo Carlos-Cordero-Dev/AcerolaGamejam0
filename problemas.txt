@@ -19,3 +19,12 @@
 - Player posiciones UV no estan bien (flipeadas)?
 - Funciones matematicas para niveles van guay pero no es practico
 - FPS mal en gamemode? Comprobar
+
+============================================================
+
+COSAS ULTIMA NOCHE
+-[x]Texturas lava / suelo
+-[x] Feedback win / lose
+-[x] Menu principal
+-Player con animaciones y modelo
+-( No va a pasar ) Sonidos
